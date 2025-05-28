@@ -1,4 +1,5 @@
 import cloudinary from "../lib/cloudinary.js";
+import { getReceiverSocketId, io } from "../lib/socket.js";
 import message from "../models/message.model.js";
 import Message from "../models/message.model.js";
 import User from "../models/user.model.js";
@@ -27,20 +28,24 @@ export const getMessages = async (req, res) => {
         res.status(200).json(messages);
     } catch (error) {
         console.log("Error in message Controller: ", error.message);
-        res.status(500).json({error: "Internal Server Error"})
+        res.status(500).json({ error: "Internal Server Error" })
     }
 }
 
-export const sendMessages = async(req, res) => {
+export const sendMessages = async (req, res) => {
     try {
-        const {text, image} = req.body;
-        const {id: recieverId} = req.params;
+        // console.log("req.user:", req.user);
+        // console.log("req.body:", req.body);
+        // console.log("req.params:", req.params);
+
+        const { text, image } = req.body;
+        const { id: recieverId } = req.params;
         const senderId = req.user._id;
         let imageUrl;
-        if(image){
+        if (image) {
             // upload base 64 image to cloudinary
             const uploadResponse = await cloudinary.uploader.upload(image);
-            imageUrl = uploadResponse.secure_url; 
+            imageUrl = uploadResponse.secure_url;
         }
 
         const newMessage = new Message({
@@ -52,11 +57,15 @@ export const sendMessages = async(req, res) => {
 
         await newMessage.save();
 
-        //todo real time functionality goes here => socket io
+        //real time functionality goes here => socket io
+        const recieverSocketId = getReceiverSocketId(recieverId);
+        if (recieverSocketId) {
+            io.to(recieverSocketId).emit("newMessage", newMessage)
+        }
 
-        res.satus(201).json(newMessage);
+        res.status(201).json(newMessage);
     } catch (error) {
         console.log("Error in messageController: ", error.message);
-        res.status(500).json({error: "Internal server error"})
+        res.status(500).json({ error: "Internal server error" })
     }
 }
