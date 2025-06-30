@@ -63,6 +63,7 @@ import { useEffect } from "react";
 import { Loader } from "lucide-react";
 import { Toaster } from "react-hot-toast";
 import { useThemeStore } from "./store/useThemeStore";
+import { socket } from "./components/MessageInput";
 
 const App = () => {
   const { authUser, checkAuth, isCheckingAuth, onlineUsers } = useAuthStore();
@@ -71,7 +72,11 @@ const App = () => {
 
   useEffect(() => {
     checkAuth();
-  }, [checkAuth]);
+    if (authUser?._id) {
+      socket.emit("setup", authUser._id); // ✅ Important!
+    }
+
+  }, [checkAuth, authUser]);
 
   if (isCheckingAuth) {
     return (

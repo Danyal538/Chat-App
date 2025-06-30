@@ -32,12 +32,14 @@ const ChatContainer = () => {
         <MessageInput />
     </div>
     return (
-        <div className=' flex-1 flex-col overflow-auto'>
-            <ChatHeader />
+        <div className="flex flex-col h-full w-full">
+            <div className="flex-none border-b border-base-300">
+                <ChatHeader />
+            </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {messages.map((message) => (
                     <div
-                        key={message.id}
+                        key={message._id || message.id || index}
                         className={`chat ${message.senderId === authUser._id ? "chat-end" : "chat-start"}`}
                         ref={messageEndRef}
                     >

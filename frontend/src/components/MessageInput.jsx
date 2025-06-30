@@ -2,12 +2,22 @@ import React, { useState, useRef } from 'react'
 import { useChatStore } from '../store/useChatStore';
 import { X, Send, Image } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { io } from 'socket.io-client';
+import { useAuthStore } from '../store/useAuthStore';
+
+
+export const socket = io("http://localhost:5001");
+
 
 const MessageInput = () => {
     const [text, setText] = useState("");
     const [imagePreview, setImagePreview] = useState(null);
     const fileInputRef = useRef(null);
     const { sendMessages } = useChatStore();
+
+    const { authUser } = useAuthStore();
+    const { selectedUser } = useChatStore();
+
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
@@ -26,6 +36,7 @@ const MessageInput = () => {
         setImagePreview(null);
         if (fileInputRef.current) fileInputRef.current.value = "";
     };
+
     const handleSendMessage = async (e) => {
         e.preventDefault();
         if (!text.trim() && !imagePreview) return;
@@ -42,6 +53,14 @@ const MessageInput = () => {
         } catch (error) {
             console.log("Error in sending message", error);
         }
+    };
+
+    const handleTyping = () => {
+        console.log("Emitting typing event");
+        socket.emit("typing", {
+            from: authUser._id,
+            to: selectedUser._id,
+        })
     };
     return (
         <div className="p-4 w-full">
@@ -72,7 +91,7 @@ const MessageInput = () => {
                         className="w-full input input-bordered rounded-lg input-sm sm:input-md"
                         placeholder="Type a message..."
                         value={text}
-                        onChange={(e) => setText(e.target.value)}
+                        onChange={(e) => { setText(e.target.value); handleTyping(); }}
                     />
                     <input
                         type="file"
