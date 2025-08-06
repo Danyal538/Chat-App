@@ -3,6 +3,7 @@ import { generateToken } from "../lib/utils.js";
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 
+
 export const signup = async (req, res) => {
     const { fullName, email, password } = req.body;
     try {
@@ -27,12 +28,19 @@ export const signup = async (req, res) => {
 
         if (newUser) {
             //get jwt
-            generateToken(newUser._id, res,)
+            const token = generateToken(newUser._id, res,)
             await newUser.save();
+
+            res.cookie("jwt", token, {
+                httpOnly: true,
+                secure: true,
+                sameSite: "None",
+                maxAge: 7 * 24 * 60 * 60 * 1000,
+            });
 
             return res.status(201).json({
                 _id: newUser._id,
-                fullName: newUser.fulName,
+                fullName: newUser.fullName,
                 email: newUser.email,
                 profilePic: newUser.profilePic,
             });
@@ -57,10 +65,17 @@ export const login = async (req, res) => {
         if (!isPasswordCorrect) {
             return res.status(400).json({ message: "Invalid credentials" })
         }
-        generateToken(user._id, res);
+        const token = generateToken(user._id, res);
+        res.cookie("jwt", token, {
+            httpOnly: true,
+            secure: true,
+            sameSite: "None",
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        });
+
         return res.status(201).json({
             _id: user._id,
-            fullName: user.fulName,
+            fullName: user.fullName,
             email: user.email,
             profilePic: user.profilePic,
         });
