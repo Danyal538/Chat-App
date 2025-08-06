@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 import { data } from "react-router-dom";
 import { io } from 'socket.io-client';
 
-const Base_Url = "http://localhost:5001"
+const Base_Url = "https://chat-app-production-ca1f.up.railway.app"
 export const useAuthStore = create((set, get) => ({
     authUser: null,
     isSigningUp: false,
@@ -107,7 +107,7 @@ export const useAuthStore = create((set, get) => ({
 
     },
     disConnectSocket: () => {
-        if (get().socket?.connected) get().socket.disconnnect();
+        if (get().socket?.connected) get().socket.disconnect();
     }
 
 }))
